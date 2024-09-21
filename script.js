@@ -1,35 +1,53 @@
-import { clearCanvas, drawShape, smoothDraw } from "./canvas.js";
+import { clearCanvas, drawShape, drawSmooth, resizeCanvas } from "./canvas.js";
+
+const canvas = document.getElementById("canvas");
 
 let drawingMode = "smooth";
-let colorPicked = "";
 let isDrawing = false;
 let isRotating = true;
+let colorPicked;
 let hue = 0;
-let angle = 0;
-let lastX = 0;
-let lastY = 0;
+let lastX;
+let lastY;
 
-const outerRadiusInput = document.querySelector("#outerRadius input");
-const innerRadiusInput = document.querySelector("#innerRadius input");
-const numberOfSidesInput = document.querySelector("#numberOfSides input");
+const outerRadiusInput = document.querySelector("#outer-radius input");
+const innerRadiusInput = document.querySelector("#inner-radius input");
+const numberOfSidesInput = document.querySelector("#number-of-sides input");
+const colorPickers = document.querySelector(".color-pickers");
+const modeButtons = document.querySelector(".mode-buttons");
 const clearButton = document.querySelector("#clear");
 const downloadButton = document.querySelector("#download");
-const modeButtons = document.querySelector(".mode-buttons");
-const colorPickers = document.querySelector(".color-pickers");
-const canvas = document.getElementById("canvas");
-const context = canvas.getContext("2d");
+
+window.addEventListener("mousedown", (e) => {
+    if (e.target === canvas) {
+        isDrawing = true;
+        lastX = e.x;
+        lastY = e.y;
+    } else {
+        isDrawing = false;
+    }
+});
+
+window.addEventListener("mouseup", () => (isDrawing = false));
+
+window.addEventListener("mousemove", (e) => {
+    if (isDrawing) {
+        draw(e.x, e.y);
+    }
+});
 
 const draw = (x, y) => {
     const outerRadius = outerRadiusInput.value;
     const innerRadius = innerRadiusInput.value;
     const numberOfSides = numberOfSidesInput.value;
 
-    hue += 0.5;
     if (drawingMode === "smooth") {
-        smoothDraw(lastX, lastY, x, y, outerRadius, hue, colorPicked);
-    } else if (drawingMode === "eraser") {
-        smoothDraw(lastX, lastY, x, y, outerRadius);
-    } else if (drawingMode === "shape") {
+        drawSmooth(lastX, lastY, x, y, outerRadius, hue, colorPicked);
+    }
+    if (drawingMode === "eraser") {
+        drawSmooth(lastX, lastY, x, y, outerRadius);
+    }
+    if (drawingMode === "shape") {
         drawShape(
             x,
             y,
@@ -37,62 +55,45 @@ const draw = (x, y) => {
             innerRadius,
             numberOfSides,
             hue,
-            colorPicked
+            colorPicked,
+            isRotating
         );
     }
+
     lastX = x;
     lastY = y;
+    hue += 0.5;
 };
 
-window.addEventListener("mousemove", (e) => {
-    if (isDrawing) {
-        if (isRotating && drawingMode === "shape") {
-            context.save();
-            context.translate(e.x, e.y);
-            context.rotate(angle);
-            draw(0, 0);
-            angle += 0.1;
-            context.restore();
-        } else {
-            console.log("hii");
-            draw(e.x, e.y);
-        }
+colorPickers.addEventListener("click", (e) => {
+    const colorPicker = e.target;
+
+    if (!colorPicker.id) return;
+
+    if (colorPicker.id === "solid-color") {
+        colorPicker.addEventListener(
+            "change",
+            () => (colorPicked = e.target.value)
+        );
     }
-});
 
-window.addEventListener("mousedown", (e) => {
-    isDrawing = true;
-    lastX = e.x;
-    lastY = e.y;
-    draw(e.x, e.y);
-});
+    if (colorPicker.id === "hue-cycling") {
+        colorPicked = "";
+        hue = 0;
+    }
 
-window.addEventListener("mouseup", () => {
-    isDrawing = false;
-});
+    document.querySelectorAll(".color-container").forEach((container) => {
+        container.classList.remove("active");
+    });
 
-window.addEventListener("resize", () => {
-    canvas.height = window.innerHeight;
-    canvas.width = window.innerWidth;
-    context.shadowOffsetX = 5;
-    context.shadowOffsetY = 5;
-    context.shadowBlur = 5;
-    context.shadowColor = "black";
-});
-
-clearButton.addEventListener("click", () => {
-    clearCanvas();
-});
-
-downloadButton.addEventListener("click", () => {
-    const a = document.createElement("a");
-    a.download = `${new Date().getTime()}.jpg`;
-    a.href = canvas.toDataURL();
-    a.click();
+    colorPicker.parentElement.classList.add("active");
 });
 
 modeButtons.addEventListener("click", (e) => {
     const button = e.target;
+
+    if (!button.id) return;
+
     Array.from(modeButtons.children).forEach((button) =>
         button.classList.remove("active")
     );
@@ -108,23 +109,13 @@ modeButtons.addEventListener("click", (e) => {
     }
 });
 
-colorPickers.addEventListener("click", (e) => {
-    const colorPicker = e.target;
-    if (colorPicker.id === "solid-color") {
-        colorPicker.addEventListener("change", (e) => {
-            colorPicked = e.target.value;
-        });
-    }
-    if (colorPicker.id === "hue-cycling") {
-        colorPicked = "";
-        hue = 0;
-    }
-    Array.from(colorPicker.parentElement.parentElement.children).forEach(
-        (picker) => {
-            picker.classList.remove("active");
-        }
-    );
-    colorPicker.parentElement.classList.add("active");
+clearButton.addEventListener("click", clearCanvas);
+
+downloadButton.addEventListener("click", () => {
+    const a = document.createElement("a");
+    a.download = `${new Date().getTime()}.jpg`;
+    a.href = canvas.toDataURL();
+    a.click();
 });
 
 document.addEventListener("keydown", (e) => {
@@ -132,3 +123,5 @@ document.addEventListener("keydown", (e) => {
         isRotating = !isRotating;
     }
 });
+
+window.addEventListener("resize", resizeCanvas);

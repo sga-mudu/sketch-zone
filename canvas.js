@@ -1,26 +1,48 @@
 const canvas = document.getElementById("canvas");
+/**@type {CanvasRenderingContext2D} */
 const context = canvas.getContext("2d");
+
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
 
 context.fillStyle = "white";
 context.fillRect(0, 0, canvas.width, canvas.height);
 
-context.lineWidth = 2;
-context.shadowOffsetX = 5;
-context.shadowOffsetY = 5;
-context.shadowBlur = 5;
+let angle = 0;
 
-export const clearCanvas = () => {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "white";
-    context.fillRect(0, 0, canvas.width, canvas.height);
+const drawCircle = (x, y, outerRadius, hue, colorPicked) => {
+    context.shadowColor = "transparent";
+    context.fillStyle = "#fff";
+    if (hue) {
+        context.fillStyle = `hsl(${hue}, 100%, 50%)`;
+    }
+    if (colorPicked) {
+        context.fillStyle = colorPicked;
+    }
+    context.beginPath();
+    context.arc(x, y, outerRadius, 0, Math.PI * 2);
+    context.closePath();
+    context.fill();
 };
 
-export const resizeCanvas = () => {
-    context.shadowColor = "black";
-    canvas.height = window.innerHeight;
-    canvas.width = window.innerWidth;
+export const drawSmooth = (
+    lastX,
+    lastY,
+    currentX,
+    currentY,
+    outerRadius,
+    hue,
+    colorPicked
+) => {
+    const distance = Math.hypot(currentX - lastX, currentY - lastY);
+    const steps = Math.ceil(distance / outerRadius) * 5;
+
+    for (let i = 0; i < steps; i++) {
+        const progress = i / steps;
+        const x = lastX + (currentX - lastX) * progress;
+        const y = lastY + (currentY - lastY) * progress;
+        drawCircle(x, y, outerRadius, hue, colorPicked);
+    }
 };
 
 export const drawShape = (
@@ -30,13 +52,18 @@ export const drawShape = (
     innerRadius,
     numberOfSides,
     hue,
-    colorPicked
+    colorPicked,
+    isRotating
 ) => {
-    context.shadowColor = "black";
     context.fillStyle = colorPicked ? colorPicked : `hsl(${hue}, 100%, 50%)`;
+    context.shadowOffsetX = 5;
+    context.shadowOffsetY = 5;
+    context.shadowBlur = 10;
+    context.shadowColor = "black";
     context.beginPath();
     context.save();
     context.translate(x, y);
+    if (isRotating) context.rotate(angle);
     context.moveTo(0, -outerRadius);
     for (let i = 0; i < numberOfSides; i++) {
         context.rotate(Math.PI / numberOfSides);
@@ -44,31 +71,23 @@ export const drawShape = (
         context.rotate(Math.PI / numberOfSides);
         context.lineTo(0, -outerRadius);
     }
+    if (isRotating) angle += 0.1;
     context.restore();
     context.closePath();
     context.stroke();
     context.fill();
 };
 
-export const drawCircle = (x, y, radius, hue, colorPicked) => {
-    context.fillStyle = colorPicked
-        ? colorPicked
-        : hue
-        ? `hsl(${hue}, 100%, 50%)`
-        : "white";
-    context.beginPath();
-    context.arc(x, y, radius, 0, Math.PI * 2);
-    context.closePath();
-    context.fill();
+export const clearCanvas = () => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "white";
+    context.fillRect(0, 0, canvas.width, canvas.height);
 };
 
-export const smoothDraw = (x1, y1, x2, y2, outerRadius, hue, colorPicked) => {
-    context.shadowColor = "transparent";
-    const distance = Math.hypot(x2 - x1, y2 - y1);
-    const step = outerRadius / 2;
-    for (let i = 0; i < distance; i += step) {
-        const x = x1 + (x2 - x1) * (i / distance);
-        const y = y1 + (y2 - y1) * (i / distance);
-        drawCircle(x, y, outerRadius, hue, colorPicked);
-    }
+export const resizeCanvas = () => {
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+    context.shadowOffsetX = 5;
+    context.shadowOffsetY = 5;
+    context.shadowBlur = 10;
 };
