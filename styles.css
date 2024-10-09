@@ -54,6 +54,7 @@ body {
     backdrop-filter: blur(10px);
     user-select: none;
     z-index: 2;
+    touch-action: auto;
 }
 
 .group {
