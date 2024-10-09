@@ -125,3 +125,23 @@ document.addEventListener("keydown", (e) => {
 });
 
 window.addEventListener("resize", resizeCanvas);
+
+window.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0];
+    if (e.target === canvas) {
+        isDrawing = true;
+        lastX = touch.clientX;
+        lastY = touch.clientY;
+    } else {
+        isDrawing = false;
+    }
+});
+
+window.addEventListener("touchend", () => (isDrawing = false));
+
+window.addEventListener("touchmove", (e) => {
+    if (isDrawing) {
+        const touch = e.touches[0];
+        draw(touch.clientX, touch.clientY);
+    }
+});
