@@ -126,7 +126,7 @@ document.addEventListener("keydown", (e) => {
 
 window.addEventListener("resize", resizeCanvas);
 
-canvas.addEventListener("touchstart", (e) => {
+window.addEventListener("touchstart", (e) => {
     const touch = e.touches[0];
     if (e.target === canvas) {
         isDrawing = true;
@@ -137,9 +137,9 @@ canvas.addEventListener("touchstart", (e) => {
     }
 });
 
-canvas.addEventListener("touchend", () => (isDrawing = false));
+window.addEventListener("touchend", () => (isDrawing = false));
 
-canvas.addEventListener("touchmove", (e) => {
+window.addEventListener("touchmove", (e) => {
     if (isDrawing) {
         const touch = e.touches[0];
         draw(touch.clientX, touch.clientY);
