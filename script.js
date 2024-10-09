@@ -145,13 +145,3 @@ window.addEventListener("touchmove", (e) => {
         draw(touch.clientX, touch.clientY);
     }
 });
-
-let lastTap = 0;
-window.addEventListener("touchend", (e) => {
-    const currentTime = new Date().getTime();
-    const tapLength = currentTime - lastTap;
-    if (tapLength < 300 && tapLength > 0) {
-        isRotating = !isRotating;
-    }
-    lastTap = currentTime;
-});
