@@ -144,7 +144,6 @@ window.addEventListener("touchend", (e) => {
 });
 
 window.addEventListener("touchmove", (e) => {
-    e.preventDefault();
     if (isDrawing) {
         const touch = e.touches[0];
         draw(touch.clientX, touch.clientY);
