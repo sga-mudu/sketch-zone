@@ -10,7 +10,8 @@ context.fillRect(0,0, canvas.width, canvas.height);
 
 
 const drawCircle = (x, y, outerRadius, hue, colorPicked) =>{
-
+    context.shadowColor = "transparent";
+    context.fillStyle = "fff";
     if(hue){
         context.fillStyle = `hsl(${hue}, 100%, 50%)`;
     } 
@@ -36,3 +37,42 @@ export const drawSmooth = (lastX, lastY, currentX, currentY, outerRadius, hue, c
         
     }
 };
+
+
+export const drawShape = (x, y, outerRadius, innerRadius, numOfSides, hue, colorPicked) =>{
+    context.fillStyle = colorPicked ? colorPicked : `hsl(${hue}, 100%, 50%)`;
+    context.shadowOffsetY = 5;
+    context.shadowOffsetX = 5;
+    context.shadowBlur = 10;
+    context.shadowColor = "black";
+    context.beginPath();
+    context.save();
+    context.translate(x, y);
+    context.moveTo(0, -outerRadius);
+    for(let i=0; i<numOfSides; i++){
+        context.rotate(Math.PI / numOfSides);
+        context.lineTo(0, -outerRadius * innerRadius);
+        context.rotate(Math.PI / numOfSides);
+        context.lineTo(0, -outerRadius);
+    }
+    context.restore();
+    context.closePath();
+    context.stroke();
+    context.fill();
+};
+
+
+export const clearCanvas = () =>{
+    context.clearRect(0,0, canvas.width, canvas.height);
+    context.fillStyle = "white";
+    context.fillRect(0,0, canvas.width, canvas.height);
+}
+
+export const resizeCanvas = () => {
+    canvas.height = window.innnerHeight;
+    canvas.width = window.innnerWidth;
+    context.shadowOffsetY = 5;
+    context.shadowOffsetX = 5;
+    context.shadowBlur = 10;
+};
+
